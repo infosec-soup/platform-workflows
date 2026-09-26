@@ -1,0 +1,47 @@
+name: Reusable Service Deployment
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      artifact-name:
+        required: true
+        type: string
+    secrets:
+      DEPLOYMENT_API_TOKEN:
+        required: false
+
+permissions:
+  contents: write
+  packages: write
+  deployments: write
+  id-token: write
+
+jobs:
+  request-deployment:
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create deployment request
+        env:
+          SERVICE: ${{ inputs.service }}
+          TARGET_ENVIRONMENT: ${{ inputs.environment }}
+          ARTIFACT_NAME: ${{ inputs.artifact-name }}
+          DEPLOYMENT_API_TOKEN: ${{ secrets.DEPLOYMENT_API_TOKEN }}
+        run: |
+          jq -n \
+            --arg service "$SERVICE" \
+            --arg environment "$TARGET_ENVIRONMENT" \
+            --arg artifact "$ARTIFACT_NAME" \
+            '{service: $service, environment: $environment, artifact: $artifact}' \
+            > deployment-request.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deployment-request
+          path: deployment-request.json
